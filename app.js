@@ -1,134 +1,174 @@
 const app = document.getElementById("app");
 
-// شروع
-if (!localStorage.getItem("user")) {
-    loginPage();
-} else {
+// ===== دیتای سرویس (مثل بتافالور) =====
+let services = [
+    {id:1, name:"فالوور اینستاگرام", price:50, min:100, max:10000},
+    {id:2, name:"لایک اینستاگرام", price:30, min:50, max:5000},
+    {id:3, name:"ویو استوری", price:20, min:100, max:20000}
+];
+
+// ===== شروع =====
+if(!localStorage.getItem("user")){
+    login();
+}else{
     dashboard();
 }
 
 // ===== لاگین =====
-function loginPage(){
+function login(){
     app.innerHTML = `
     <div class="card">
-        <h2>🔐 ورود</h2>
-        <input id="user" placeholder="نام کاربری">
-        <button class="btn" onclick="login()">ورود</button>
+        <h2>ورود</h2>
+        <input id="u" placeholder="نام کاربری">
+        <button class="btn" onclick="doLogin()">ورود</button>
     </div>
     `;
 }
 
-function login(){
-    let u = document.getElementById("user").value;
+function doLogin(){
+    let u = document.getElementById("u").value;
     if(!u) return alert("نام بزن");
 
-    localStorage.setItem("user", u);
-    localStorage.setItem("balance", 50000);
+    localStorage.setItem("user",u);
+    localStorage.setItem("balance",100000);
     dashboard();
 }
 
 // ===== داشبورد =====
 function dashboard(){
+    let user = localStorage.getItem("user");
+    let balance = localStorage.getItem("balance");
+
     app.innerHTML = `
+    <div class="header">
+        <span>${user}</span>
+        <span>💰 ${balance}</span>
+    </div>
+
     <div id="page"></div>
 
-    <div class="nav">
-        <button onclick="home()">🏠</button>
-        <button onclick="orderPage()">➕</button>
-        <button onclick="ordersPage()">📦</button>
-        <button onclick="logout()">🚪</button>
+    <div class="header">
+        <button onclick="home()">خانه</button>
+        <button onclick="order()">سفارش</button>
+        <button onclick="orders()">سفارشات</button>
+        <button onclick="logout()">خروج</button>
     </div>
     `;
+
     home();
 }
 
 // ===== خانه =====
 function home(){
-    let user = localStorage.getItem("user");
-    let balance = localStorage.getItem("balance");
-
     document.getElementById("page").innerHTML = `
     <div class="card">
-        <h3>👤 ${user}</h3>
-        <p>💰 موجودی: ${balance}</p>
+        خوش اومدی 😈
     </div>
     `;
 }
 
-// ===== سفارش =====
-function orderPage(){
-    let services = JSON.parse(localStorage.getItem("services")||"[]");
-
-    if(services.length === 0){
-        document.getElementById("page").innerHTML = `
-        <div class="card">
-        ❌ سرویسی نیست (ادمین اضافه کن)
-        </div>`;
-        return;
-    }
-
+// ===== ثبت سفارش =====
+function order(){
     let options="";
-    services.forEach((s,i)=>{
-        options += `<option value="${i}">${s}</option>`;
+    services.forEach(s=>{
+        options += `<option value="${s.id}">${s.name}</option>`;
     });
 
     document.getElementById("page").innerHTML = `
     <div class="card">
         <h3>ثبت سفارش</h3>
 
-        <select id="service">${options}</select>
-        <input id="link" placeholder="لینک">
-        <input id="qty" placeholder="تعداد">
+        <select id="service" onchange="updatePrice()">
+            ${options}
+        </select>
 
-        <button class="btn" onclick="sendOrder()">ثبت 🚀</button>
+        <input id="qty" placeholder="تعداد" oninput="calc()">
+        <input id="link" placeholder="لینک">
+
+        <p id="info"></p>
+        <p id="total"></p>
+
+        <button class="btn" onclick="send()">ثبت سفارش</button>
     </div>
     `;
+
+    updatePrice();
 }
 
-// ===== ارسال =====
-function sendOrder(){
-    let s = document.getElementById("service").value;
-    let link = document.getElementById("link").value;
+// ===== نمایش قیمت =====
+function updatePrice(){
+    let id = document.getElementById("service").value;
+    let s = services.find(x=>x.id==id);
+
+    document.getElementById("info").innerText =
+    `قیمت: ${s.price} | حداقل: ${s.min} | حداکثر: ${s.max}`;
+
+    calc();
+}
+
+// ===== محاسبه =====
+function calc(){
+    let id = document.getElementById("service").value;
     let qty = document.getElementById("qty").value;
 
-    if(!link || !qty) return alert("پر کن");
+    let s = services.find(x=>x.id==id);
 
+    let total = qty * s.price;
+
+    document.getElementById("total").innerText =
+    "هزینه: " + total;
+}
+
+// ===== ثبت =====
+function send(){
+    let id = document.getElementById("service").value;
+    let qty = parseInt(document.getElementById("qty").value);
+    let link = document.getElementById("link").value;
+
+    let s = services.find(x=>x.id==id);
+
+    if(qty < s.min || qty > s.max){
+        return alert("مقدار مجاز نیست");
+    }
+
+    let total = qty * s.price;
     let balance = parseInt(localStorage.getItem("balance"));
 
-    if(balance < 1000) return alert("پولت کمه");
+    if(balance < total){
+        return alert("موجودی کافی نیست");
+    }
 
-    balance -= 1000;
-    localStorage.setItem("balance", balance);
+    balance -= total;
+    localStorage.setItem("balance",balance);
 
     let orders = JSON.parse(localStorage.getItem("orders")||"[]");
 
     orders.push({
-        service:s,
-        link,
+        name:s.name,
         qty,
-        status:"درحال انجام"
+        total,
+        status:"در حال انجام"
     });
 
-    localStorage.setItem("orders", JSON.stringify(orders));
+    localStorage.setItem("orders",JSON.stringify(orders));
 
     alert("ثبت شد 😈");
-    ordersPage();
+    orders();
 }
 
-// ===== لیست =====
-function ordersPage(){
+// ===== لیست سفارش =====
+function orders(){
     let orders = JSON.parse(localStorage.getItem("orders")||"[]");
-    let services = JSON.parse(localStorage.getItem("services")||"[]");
 
     let html = `<div class="card"><h3>سفارشات</h3>`;
 
     orders.forEach(o=>{
         html += `
         <div class="order">
-        🧩 ${services[o.service]||"?"}<br>
-        🔗 ${o.link}<br>
-        🔢 ${o.qty}<br>
-        ⏳ ${o.status}
+        ${o.name}<br>
+        تعداد: ${o.qty}<br>
+        هزینه: ${o.total}<br>
+        وضعیت: ${o.status}
         </div>
         `;
     });
@@ -142,4 +182,4 @@ function ordersPage(){
 function logout(){
     localStorage.clear();
     location.reload();
-}
+        }
