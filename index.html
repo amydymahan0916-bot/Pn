@@ -2,14 +2,89 @@
 <html lang="fa">
 <head>
 <meta charset="UTF-8">
-<title>پنل حرفه‌ای</title>
-<link rel="stylesheet" href="style.css">
-</head>
+<title>Panel</title>
 
+<style>
+body {
+    margin:0;
+    font-family:sans-serif;
+    background: radial-gradient(circle at top, #0f172a, #020617);
+    color:white;
+}
+
+/* کارت */
+.card {
+    background: rgba(255,255,255,0.05);
+    backdrop-filter: blur(15px);
+    margin:20px;
+    padding:20px;
+    border-radius:20px;
+    box-shadow:0 0 30px rgba(0,0,0,0.6);
+}
+
+/* دکمه گنگ */
+.btn {
+    display:block;
+    width:100%;
+    padding:14px;
+    margin-top:10px;
+    border:none;
+    border-radius:12px;
+    background: linear-gradient(45deg,#22c55e,#16a34a);
+    color:white;
+    font-weight:bold;
+    cursor:pointer;
+    transition:0.2s;
+}
+
+.btn:active {
+    transform:scale(0.95);
+}
+
+/* اینپوت */
+input,select {
+    width:100%;
+    padding:12px;
+    margin-top:10px;
+    border-radius:10px;
+    border:none;
+    background:#020617;
+    color:white;
+}
+
+/* ناوبری پایین */
+.nav {
+    position:fixed;
+    bottom:0;
+    width:100%;
+    display:flex;
+    justify-content:space-around;
+    background:#020617;
+    padding:10px;
+    box-shadow:0 -5px 20px rgba(0,0,0,0.5);
+}
+
+.nav button {
+    background:none;
+    border:none;
+    color:white;
+    font-size:20px;
+}
+
+/* لیست سفارش */
+.order {
+    background:#020617;
+    padding:15px;
+    border-radius:12px;
+    margin-top:10px;
+}
+</style>
+
+</head>
 <body>
 
 <div id="app"></div>
 
 <script src="app.js"></script>
 </body>
-</html>
+  </html>
